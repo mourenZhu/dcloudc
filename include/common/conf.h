@@ -1,5 +1,5 @@
-#ifndef __CONF_H_
-#define __CONF_H_
+#ifndef CONF_H
+#define CONF_H
 
 #define MAX_LINE_LENGTH 1024
 

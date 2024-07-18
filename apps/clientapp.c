@@ -3,7 +3,7 @@
 #include "common/log.h"
 #include "device/device.h"
 
-#define DEFAULT_CONF_PATH "application.conf"
+#define DEFAULT_CONF_PATH "client.conf"
 
 char serverip[1024] = {0};
 char serverport[64] = {0};

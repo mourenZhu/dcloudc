@@ -11,6 +11,8 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/src src_dirs) # 指定源码目录
 
 link_directories(${PROJECT_SOURCE_DIR}/lib) # 指定库搜索路径
 
+find_library(LIBEVENT2_CORE event_core)
+
 # The compiled library code is here
 add_subdirectory(src)
 

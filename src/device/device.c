@@ -12,7 +12,11 @@ int init_device_info(DeviceInfoT *devinfop)
 {
     memset(devinfop->type_name, 0, sizeof(devinfop->type_name));
     memset(devinfop->device_time, 0, sizeof(devinfop->device_time));
+    memset(devinfop->macaddrs, 0, sizeof(devinfop->macaddrs));
+    memset(devinfop->ipv4s, 0, sizeof(devinfop->ipv4s));
+    memset(devinfop->ipv6s, 0, sizeof(devinfop->ipv6s));
     devinfop->device_version = NULL;
+    return 0;
 }
 
 int update_device_info(struct device_info *devinfop)

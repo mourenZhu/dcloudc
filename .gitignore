@@ -72,5 +72,5 @@ CMakeUserPresets.json
 
 #my file
 /bin/*
-!/bin/application.conf
+!/bin/client.conf
 
