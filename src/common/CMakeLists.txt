@@ -8,7 +8,7 @@ file(GLOB COMMON_HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/co
 # set(HEADER_LIST "${PROJECT_SOURCE_DIR}/include/device_cloud_client/conf.h")
 
 # Make an automatic library - will be static or dynamic based on user setting
-add_library(common_library conf.c log.c futil.c ${COMMON_HEADER_LIST})
+add_library(common_library conf.c log.c futil.c tlv.c ${COMMON_HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
 target_include_directories(common_library PUBLIC ${PROJECT_SOURCE_DIR}/include)

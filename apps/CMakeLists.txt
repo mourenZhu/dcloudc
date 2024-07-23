@@ -1,6 +1,6 @@
 add_executable(client clientapp.c)
 
-target_link_libraries(client PRIVATE device_library common_library )
+target_link_libraries(client PRIVATE client_library device_library common_library ${cJSON} )
 
 add_executable(server serverapp.c)
 
