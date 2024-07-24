@@ -20,36 +20,48 @@ size_t bufferevent_read_to_tlv(struct bufferevent *bev, TLV *tlv);
 
 
 static void
-echo_read_cb(struct bufferevent *bev, void *ctx)
+server_read_cb(struct bufferevent *bev, void *ctx)
 {
     /* This callback is invoked when there is data to read on bev. */
     struct evbuffer *input = bufferevent_get_input(bev);
-    struct evbuffer *output = bufferevent_get_output(bev);
-
-    TLV tlv = {};
-    init_tlv(&tlv);
-    if (bufferevent_read_to_tlv(bev, &tlv) == -1) {
-        int fd = bufferevent_getfd(bev);
-        log_error("fd %d read err, start close", fd);
-        free_tlv(&tlv);
-        close(fd);
-        bufferevent_free(bev);
-        return;
+//    struct evbuffer *output = bufferevent_get_output(bev);
+    TLV *tlv = (TLV *)ctx;
+    size_t recv_cnt = 0;
+    if (tlv->type == MSG_TYPE_UNREAD) {
+        recv_cnt = bufferevent_read(bev, &tlv->type, sizeof(tlv->type));
+        if (recv_cnt < sizeof(tlv->type)) {
+           tlv->type = MSG_TYPE_UNREAD;
+            return;
+        }
     }
+//    if (tlv->length == )
 
-    log_info("tlv data: type %d, length %ld, value %s", tlv.type, tlv.length, tlv.value);
-    free_tlv(&tlv);
+//    if (bufferevent_read_to_tlv(bev, &tlv) == -1) {
+//        int fd = bufferevent_getfd(bev);
+//        log_error("fd %d read err, start close", fd);
+//        free_tlv(&tlv);
+//        close(fd);
+//        bufferevent_free(bev);
+//        return;
+//    }
+
+    log_info("tlv data: type %d, length %ld, value %s", tlv->type, tlv->length, tlv->value);
     /* Copy all the data from the input buffer to the output buffer. */
 //    evbuffer_add_buffer(output, input);
 }
 
 static void
-echo_event_cb(struct bufferevent *bev, short events, void *ctx)
+server_event_cb(struct bufferevent *bev, short events, void *ctx)
 {
     if (events & BEV_EVENT_ERROR)
         perror("Error from bufferevent");
     if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR)) {
         log_info("events: %d ,event close", events);
+        TLV *tlv = (TLV *)ctx;
+        if (tlv != NULL) {
+            free_tlv(tlv);
+            free(tlv);
+        }
         bufferevent_free(bev);
     }
 }
@@ -67,7 +79,9 @@ accept_conn_cb(struct evconnlistener *listener,
 
     bufferevent_set_timeouts(bev, &timeout_read, NULL);
     log_info("new conn fd = %d", fd);
-    bufferevent_setcb(bev, echo_read_cb, NULL, echo_event_cb, NULL);
+
+    TLV *tlv = malloc(sizeof(TLV));
+    bufferevent_setcb(bev, server_read_cb, NULL, server_event_cb, tlv);
 
     bufferevent_enable(bev, EV_READ|EV_WRITE);
 }
@@ -141,27 +155,19 @@ size_t bufferevent_read_to_tlv(struct bufferevent *bev, TLV *tlv) {
     size_t recv_len = 0;
     size_t recv_cnt = 0;
     size_t recv_total = 0;
-//    struct timeval read_before, read_after;
 
     size_t buffer_len = evbuffer_get_length(bufferevent_get_input(bev));
     log_info("buffer_len = %d", buffer_len);
 
-//    gettimeofday(&read_before, NULL);
     while (recv_len < sizeof(tlv->type)) {
         recv_cnt = bufferevent_read(bev, &tlv->type, sizeof(tlv->type));
         recv_len += recv_cnt;
         log_info("recv_len = %d", recv_len);
         sleep(1);
-
-//        gettimeofday(&read_after, NULL);
-//        if (read_after.tv_sec - read_before.tv_sec > SOCK_MAX_WAIT_SEC) {
-//            return -1;
-//        }
     }
     log_info("tlv->type=%d", tlv->type);
     recv_total += recv_len;
 
-//    gettimeofday(&read_before, NULL);
     recv_len = 0; recv_cnt = 0;
     char length_c[sizeof(tlv->length)];
     memset(length_c, 0, sizeof(tlv->length));
@@ -170,17 +176,11 @@ size_t bufferevent_read_to_tlv(struct bufferevent *bev, TLV *tlv) {
         recv_len += recv_cnt;
         log_info("recv_len = %d", recv_len);
         sleep(1);
-
-//        gettimeofday(&read_after, NULL);
-//        if (read_after.tv_sec - read_before.tv_sec > SOCK_MAX_WAIT_SEC) {
-//            return -1;
-//        }
     }
     recv_total += recv_len;
     memcpy(&tlv->length, length_c, sizeof(tlv->length));
     log_info("tlv->length=%d", tlv->length);
 
-//    gettimeofday(&read_before, NULL);
     recv_len = 0; recv_cnt = 0;
     tlv->value = malloc(tlv->length + 1);
     while (recv_len < tlv->length) {
@@ -189,10 +189,6 @@ size_t bufferevent_read_to_tlv(struct bufferevent *bev, TLV *tlv) {
         log_info("recv_len = %d", recv_len);
         sleep(1);
 
-//        gettimeofday(&read_after, NULL);
-//        if (read_after.tv_sec - read_before.tv_sec > SOCK_MAX_WAIT_SEC) {
-//            return -1;
-//        }
     }
     log_info("tlv->value=%s", tlv->value);
     recv_total += recv_len;

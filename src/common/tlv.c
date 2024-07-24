@@ -2,13 +2,22 @@
 #include <string.h>
 
 void init_tlv(TLV *tlv) {
-
+    tlv->type = MSG_TYPE_UNREAD;
+    tlv->length = 0;
+    tlv->value = NULL;
 }
 
 void free_tlv(TLV *tlv) {
-    if (tlv->value != NULL) {
-        free(tlv->value);
+    if (tlv != NULL) {
+        if (tlv->value != NULL) {
+            free(tlv->value);
+        }
     }
+}
+
+void reset_tlv(TLV *tlv) {
+    free_tlv(tlv);
+    init_tlv(tlv);
 }
 
 ssize_t write_tlv(int fd, TLV *tlv) {

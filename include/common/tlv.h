@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 enum {
+    MSG_TYPE_UNREAD, /*在初始化TLV时，代表还未读取消息*/
     MSG_TYPE_REGISTER,
     MSG_TYPE_LOGIN,
     MSG_TYPE_LOGOUT,
@@ -21,10 +22,17 @@ typedef struct tlv {
     char *value;
 }TLV;
 
+typedef struct tlv_prot {
+    TLV *tlv;
+
+}TLV_PROT;
+
 
 void init_tlv(TLV *tlv);
 
 void free_tlv(TLV *tlv);
+
+void reset_tlv(TLV *tlv);
 
 ssize_t write_tlv(int fd, TLV *tlv);
 
