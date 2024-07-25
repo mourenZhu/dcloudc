@@ -136,14 +136,25 @@ int start_server(ServerConfT *sconf)
                                        LEV_OPT_CLOSE_ON_FREE|LEV_OPT_REUSEABLE, -1,
                                        (struct sockaddr*)&sin, sizeof(sin));
     if (!listener) {
-        perror("Couldn't create listener");
-        return 1;
+        log_error("Couldn't create listener");
+        return -1;
     }
+
+    int fd = evconnlistener_get_fd(listener);
+    if (evutil_make_socket_nonblocking(fd) != 0) {
+        log_error("couldn't make socket:%d nonblocking", fd);
+        goto listener_err;
+    }
+
     evconnlistener_set_error_cb(listener, accept_error_cb);
 
     log_info("libevent listener start");
     event_base_dispatch(base);
     return 0;
+
+listener_err:
+    evconnlistener_free(listener);
+    return -1;
 }
 
 void free_server(ServerConfT *sconf)
