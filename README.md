@@ -15,7 +15,7 @@ git clone https://github.com/DaveGamble/cJSON.git
 cd cJSON/
 mkdir build
 cd build
-cmake ..
+cmake .. -DBUILD_SHARED_AND_STATIC_LIBS=On
 sudo make install
 ```
 

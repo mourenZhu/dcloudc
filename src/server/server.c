@@ -150,6 +150,9 @@ int start_server(ServerConfT *sconf)
 
     log_info("libevent listener start");
     event_base_dispatch(base);
+
+    event_base_free(base);
+    evconnlistener_free(listener);
     return 0;
 
 listener_err:
